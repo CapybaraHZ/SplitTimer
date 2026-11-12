@@ -1,0 +1,89 @@
+name: Build and Release
+
+# 每次 push 到 main 都会：构建单文件 exe → 按 csproj 里的版本号打标签并发 Release → 更新 Pages 上的介绍页和最新版下载。
+# 想产生一个新的历史版本，就把 <Version> 改大再推；版本号不变则只是刷新同一个版本。
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/screenshots/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Read version from csproj
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content src/SplitTimer/SplitTimer.csproj
+          $version = $project.Project.PropertyGroup.Version
+          if (-not $version) { throw 'csproj 里没有 <Version>' }
+          Write-Host "version = $version"
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Publish single-file exe
+        run: >
+          dotnet publish src/SplitTimer/SplitTimer.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:DebugType=none
+          -o dist
+
+      - name: Stage site (介绍页 + 最新版安装包)
+        shell: pwsh
+        run: |
+          Copy-Item dist/SplitTimer.exe docs/SplitTimer.exe -Force
+          Copy-Item dist/SplitTimer.exe "docs/SplitTimer-${{ steps.version.outputs.version }}.exe" -Force
+          Get-ChildItem docs | Select-Object Name, Length
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: 读秒计时器 v${{ steps.version.outputs.version }}
+          body: |
+            读秒计时器 v${{ steps.version.outputs.version }}（Windows x64 单文件，自带运行时）。
+
+            - 直接运行 `SplitTimer.exe` 即可，无需安装 .NET
+            - 介绍页与在线下载：https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+            - 历史版本都在本页的 Releases 列表里
+          files: |
+            dist/SplitTimer.exe
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

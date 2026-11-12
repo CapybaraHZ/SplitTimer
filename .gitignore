@@ -1,0 +1,13 @@
+# 构建产物
+bin/
+obj/
+dist/
+*.user
+
+# 本地截图 / 诊断文件
+_*.png
+_k*.txt
+_test.log
+
+# 站点里由 CI 放入的构建产物
+docs/SplitTimer.exe

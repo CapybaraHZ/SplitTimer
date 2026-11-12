@@ -36,8 +36,11 @@ if ($LASTEXITCODE -ne 0) { throw "build failed" }
 
 git add -A
 git commit -m "release v$Version"
-git tag "v$Version"
+
+# Do NOT tag here: the workflow creates vX.Y.Z itself, so the tag always points
+# at the commit that actually produced the uploaded exe.
 git push origin main
-git push origin "v$Version"
-Write-Host "pushed v$Version - Actions is building the release now"
+Write-Host "pushed v$Version"
+Write-Host "Actions is building it now: https://github.com/CapybaraHZ/SplitTimer/actions"
+Write-Host "release appears at: https://github.com/CapybaraHZ/SplitTimer/releases"
 popd

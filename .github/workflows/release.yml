@@ -1,19 +1,20 @@
 name: Build and Release
 
-# 每次 push 到 main 都会：构建单文件 exe → 按 csproj 里的版本号打标签并发 Release → 更新 Pages 上的介绍页和最新版下载。
+# 每次改动源码并推到 main 都会：构建单文件 exe → 按 csproj 里的版本号建/更新 Release。
 # 想产生一个新的历史版本，就把 <Version> 改大再推；版本号不变则只是刷新同一个版本。
+# 介绍页由 GitHub Pages 从 main 分支的 /docs 目录直接发布，页面里的版本列表在浏览器端读 Releases API。
 
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'docs/screenshots/**'
+    paths:
+      - 'src/**'
+      - 'packaging/**'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -49,18 +50,6 @@ jobs:
           -p:DebugType=none
           -o dist
 
-      - name: Stage site (介绍页 + 最新版安装包)
-        shell: pwsh
-        run: |
-          Copy-Item dist/SplitTimer.exe docs/SplitTimer.exe -Force
-          Copy-Item dist/SplitTimer.exe "docs/SplitTimer-${{ steps.version.outputs.version }}.exe" -Force
-          Get-ChildItem docs | Select-Object Name, Length
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs
-
       - name: Publish Release
         uses: softprops/action-gh-release@v2
         with:
@@ -76,14 +65,3 @@ jobs:
             dist/SplitTimer.exe
           fail_on_unmatched_files: true
           generate_release_notes: true
-
-  deploy-pages:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

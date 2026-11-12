@@ -73,9 +73,11 @@ dotnet publish src/SplitTimer/SplitTimer.csproj -c Release -r win-x64 \
 
 ## 介绍页与下载
 
-- 介绍页：`docs/index.html`（GitHub Pages 从 `main` 分支的 `/docs` 发布）
+- 介绍页：<https://capybarahz.github.io/SplitTimer/>
 - 最新版下载：`https://github.com/CapybaraHZ/SplitTimer/releases/latest/download/SplitTimer.exe`
-- 历史版本：`https://github.com/CapybaraHZ/SplitTimer/releases`
+- 历史版本：<https://github.com/CapybaraHZ/SplitTimer/releases>
+
+Pages 由 Actions 构建产物发布（不是直接读 `/docs` 分支目录）：工作流会把 `dist/SplitTimer.exe` 复制进 `docs/`，连同介绍页一起作为站点产物上传，所以页面上同源的 `SplitTimer.exe` 永远是当前构建出来的最新版。页面里的版本列表在浏览器端读 GitHub Releases API，自动列出全部历史版本并逐条给出下载链接。
 
 ## 目录结构
 

@@ -202,6 +202,35 @@
 
   .older { margin-top: 14px; font-size: 13px; color: var(--text-3); }
 
+  /* ---------- 版本列表 ---------- */
+  .vlist-head {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    margin: 22px 2px 9px; font-size: 12.5px; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: .6px;
+  }
+  .vlist-head .hint { text-transform: none; letter-spacing: 0; color: var(--text-3); font-size: 12px; }
+  .vlist { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; background: #0c121b; }
+  .vrow {
+    display: grid; grid-template-columns: 116px 1fr auto auto; gap: 14px; align-items: center;
+    padding: 11px 15px; border-bottom: 1px solid var(--line-soft); font-size: 13.2px;
+  }
+  .vrow:last-child { border-bottom: 0; }
+  .vrow .vt { font-family: var(--mono); color: var(--text); font-size: 13px; }
+  .vrow .vn { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vrow .vd { color: var(--text-3); font-size: 12px; font-family: var(--mono); white-space: nowrap; }
+  .vrow .vdl {
+    font-size: 12.5px; color: var(--accent); text-decoration: none; white-space: nowrap;
+    border: 1px solid #1f4a58; background: #0d1c22; border-radius: 8px; padding: 5px 11px;
+    transition: border-color .15s, background .15s;
+  }
+  .vrow .vdl:hover { border-color: #2f7d92; background: #102631; }
+  .vrow .vdl[aria-disabled="true"] { color: var(--text-3); border-color: var(--line); background: transparent; cursor: default; }
+  .vrow .vtag {
+    font-size: 10.5px; color: var(--green); border: 1px solid #245645; background: #0f2a22;
+    border-radius: 999px; padding: 1px 7px; margin-left: 7px; vertical-align: 1px;
+  }
+  .vempty { grid-template-columns: 1fr; color: var(--text-3); }
+
   /* ---------- 安装 ---------- */
   .install-wrap { display: grid; grid-template-columns: 1fr 360px; gap: 28px; align-items: center; }
   .settings-shot { margin: 0; max-width: 340px; justify-self: end; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #0b1017; }
@@ -272,7 +301,8 @@
         全部完成后再由「显示结果」统一揭示。支持按自定义时间周期自动排名，适合课堂抢答、反应力比赛和现场投影。
       </p>
       <div class="cta">
-        <a class="btn btn-primary" id="btn-download" href="SplitTimer.exe" download>
+        <a class="btn btn-primary" id="btn-download"
+           href="https://github.com/CapybaraHZ/SplitTimer/releases/latest/download/SplitTimer.exe">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 3v12m0 0l-4.2-4.2M12 15l4.2-4.2M4 20h16"></path>
           </svg>
@@ -461,15 +491,25 @@
         </ul>
       </div>
       <div class="dl">
-        <a class="btn btn-primary" href="SplitTimer.exe" download>下载 v1.1.0</a>
+        <a class="btn btn-primary" id="dl-latest"
+           href="https://github.com/CapybaraHZ/SplitTimer/releases/latest/download/SplitTimer.exe">下载 v1.1.0</a>
         <a class="btn btn-ghost" href="https://github.com/CapybaraHZ/SplitTimer/releases">全部版本</a>
       </div>
     </div>
 
+    <div class="vlist-head">
+      <span>所有已发布版本</span>
+      <span class="hint" id="vlist-hint">正在从 GitHub Releases 读取…</span>
+    </div>
+
+    <div class="vlist" id="version-list">
+      <div class="vrow vempty">正在加载版本列表…</div>
+    </div>
+
     <p class="older">
-      需要更早的版本？打开 <a id="link-releases" href="https://github.com/CapybaraHZ/SplitTimer/releases">Releases 页面</a>，
-      每个标签（v1.1.0 起）都附带可直接运行的 <code style="font-family:var(--mono)">SplitTimer.exe</code>；
-      也可以从 <a id="link-tags" href="https://github.com/CapybaraHZ/SplitTimer/tags">Tags</a> 查看对应的源码快照。
+      版本列表直接读自 <a id="link-releases" href="https://github.com/CapybaraHZ/SplitTimer/releases">Releases</a>，
+      每个版本都附带可直接运行的 <code style="font-family:var(--mono)">SplitTimer.exe</code>；
+      对应源码快照见 <a id="link-tags" href="https://github.com/CapybaraHZ/SplitTimer/tags">Tags</a>。
     </p>
   </section>
 
@@ -503,6 +543,77 @@
     </span>
   </div>
 </footer>
+
+<script>
+(() => {
+  const REPO = 'CapybaraHZ/SplitTimer';
+  const list = document.getElementById('version-list');
+  const hint = document.getElementById('vlist-hint');
+  if (!list) return;
+
+  const fmtSize = (bytes) => bytes ? (bytes / 1048576).toFixed(1) + ' MB' : '';
+  const fmtDate = (iso) => {
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    const p = (n) => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  };
+
+  const fallback = () => {
+    hint.textContent = '在线列表读取失败，请直接前往 Releases';
+    list.innerHTML = '<div class="vrow vempty">暂时无法读取版本列表，' +
+      '<a href="https://github.com/' + REPO + '/releases" style="color:var(--accent)">在 Releases 页面查看全部版本</a></div>';
+  };
+
+  fetch('https://api.github.com/repos/' + REPO + '/releases?per_page=100', {
+    headers: { Accept: 'application/vnd.github+json' }
+  })
+    .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then((releases) => {
+      const pub = (releases || []).filter((r) => !r.draft);
+      if (!pub.length) { hint.textContent = '还没有已发布的版本'; list.innerHTML = ''; return; }
+
+      hint.textContent = '共 ' + pub.length + ' 个版本';
+
+      list.innerHTML = pub.map((r, i) => {
+        const exe = (r.assets || []).find((a) => /SplitTimer.*\.exe$/i.test(a.name));
+        const tag = r.tag_name || r.name;
+        const dl = exe
+          ? '<a class="vdl" href="' + exe.browser_download_url + '">下载 ' + fmtSize(exe.size) + '</a>'
+          : '<span class="vdl" aria-disabled="true">无安装包</span>';
+        return '<div class="vrow">' +
+          '<span class="vt">' + tag + (i === 0 ? '<span class="vtag">最新</span>' : '') + '</span>' +
+          '<span class="vn">' + (r.name || tag) + '</span>' +
+          '<span class="vd">' + fmtDate(r.published_at) + '</span>' +
+          dl + '</div>';
+      }).join('');
+
+      const latest = pub[0];
+      const vTag = (latest.tag_name || '').trim();
+      if (vTag) {
+        const badge = document.getElementById('ver-badge');
+        const relVer = document.getElementById('rel-version');
+        if (badge) badge.textContent = vTag;
+        if (relVer) relVer.textContent = vTag;
+        const dlBtn = document.getElementById('btn-download');
+        if (dlBtn) dlBtn.textContent = '下载 ' + vTag;
+        const relBtn = document.getElementById('dl-latest');
+        if (relBtn) relBtn.textContent = '下载 ' + vTag;
+
+        // 把下载入口钉到最新版本的真实资产地址（比 /latest/download 别名更快命中）。
+        const exe0 = (latest.assets || []).find((a) => /SplitTimer.*\.exe$/i.test(a.name));
+        if (exe0) {
+          [document.getElementById('btn-download'), relBtn].forEach((el) => {
+            if (el) el.href = exe0.browser_download_url;
+          });
+        }
+        const dateEl = document.querySelector('.release .date');
+        if (dateEl && latest.published_at) dateEl.textContent = fmtDate(latest.published_at);
+      }
+    })
+    .catch(fallback);
+})();
+</script>
 
 </body>
 </html>

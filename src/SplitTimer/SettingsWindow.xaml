@@ -82,13 +82,13 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- 开始 / 重置 快捷键 -->
+                <!-- 快捷键（开始 / 重置 / 显示结果） -->
                 <Grid Margin="0,16,0,0">
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="开始 / 重置 快捷键" FontSize="13.5"
+                        <TextBlock Text="快捷键" FontSize="13.5"
                                    Foreground="{StaticResource TextPrimaryBrush}" />
-                        <TextBlock Text="用键盘发令与重置，按钮上会同步显示键位"
-                                   FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap" MaxWidth="300"
+                        <TextBlock Text="开始、重置、显示结果都能改键，按钮上同步显示"
+                                   FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap" MaxWidth="190"
                                    HorizontalAlignment="Left"
                                    Foreground="{StaticResource TextMutedBrush}" />
                     </StackPanel>
@@ -102,7 +102,7 @@
 
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="8,0,0,0" MinWidth="72">
+                                <StackPanel Margin="6,0,0,0" MinWidth="62">
                                     <TextBlock Text="{Binding Title}" FontSize="11"
                                                HorizontalAlignment="Center" Margin="0,0,0,4"
                                                Foreground="{StaticResource TextMutedBrush}" />
@@ -111,7 +111,7 @@
                                             AutomationProperties.Name="{Binding Title, StringFormat={}{0}快捷键}">
                                         <Button.Style>
                                             <Style TargetType="Button" BasedOn="{StaticResource SmallGhostButton}">
-                                                <Setter Property="Padding" Value="12,5" />
+                                                <Setter Property="Padding" Value="10,5" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsCapturing}" Value="True">
                                                         <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />

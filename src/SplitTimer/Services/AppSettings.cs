@@ -37,6 +37,9 @@ public sealed class AppSettings
     /// <summary>重置整轮的快捷键，保存为 WPF Key 枚举名（默认 Esc）。</summary>
     public string ResetKey { get; set; } = DefaultResetKey;
 
+    /// <summary>全部完成后揭示成绩的快捷键，保存为 WPF Key 枚举名（默认回车）。</summary>
+    public string RevealKey { get; set; } = DefaultRevealKey;
+
     public List<PlayerSetting> Players { get; set; } = CreateDefaultPlayers();
 
     public const int MinPlayers = 1;
@@ -44,6 +47,7 @@ public sealed class AppSettings
     public const int MaxRankingWindowMinutes = 1440;
     public const string DefaultStartKey = "Space";
     public const string DefaultResetKey = "Escape";
+    public const string DefaultRevealKey = "Enter";
 
     private static readonly string[] DefaultKeys =
     {
@@ -74,6 +78,7 @@ public sealed class AppSettings
         RankingWindowMinutes = RankingWindowMinutes,
         StartKey = StartKey,
         ResetKey = ResetKey,
+        RevealKey = RevealKey,
         Players = Players.Select(p => p.Clone()).ToList(),
     };
 
@@ -86,12 +91,14 @@ public sealed class AppSettings
 
         StartKey = NormalizeKey(StartKey, DefaultStartKey);
         ResetKey = NormalizeKey(ResetKey, DefaultResetKey);
+        RevealKey = NormalizeKey(RevealKey, DefaultRevealKey);
 
-        // 开始键与重置键撞在一起时保留开始键，重置键退回默认。
-        if (SameKey(StartKey, ResetKey))
-        {
-            ResetKey = SameKey(StartKey, DefaultResetKey) ? DefaultStartKey : DefaultResetKey;
-        }
+        // 三个快捷键必须互不相同，否则行为没法预测（谁先被判到就吃掉后一个）。
+        // 撞车的那一个退回自己的默认键，还撞就顺延到空闲的 F 键。
+        var hotkeys = new HashSet<System.Windows.Input.Key>();
+        StartKey = PickDistinct(StartKey, DefaultStartKey, hotkeys);
+        ResetKey = PickDistinct(ResetKey, DefaultResetKey, hotkeys);
+        RevealKey = PickDistinct(RevealKey, DefaultRevealKey, hotkeys);
 
         Players ??= CreateDefaultPlayers();
 
@@ -158,6 +165,34 @@ public sealed class AppSettings
     {
         var key = KeyNames.Parse(value);
         return key == System.Windows.Input.Key.None ? fallback : key.ToString();
+    }
+
+    /// <summary>占用表里没有这个键就用它，否则依次试默认键与空闲的 F 键。</summary>
+    private static string PickDistinct(string value, string fallback, HashSet<System.Windows.Input.Key> used)
+    {
+        var key = KeyNames.Parse(value);
+        if (used.Add(key))
+        {
+            return key.ToString();
+        }
+
+        var fallbackKey = KeyNames.Parse(fallback);
+        if (used.Add(fallbackKey))
+        {
+            return fallbackKey.ToString();
+        }
+
+        for (var candidate = System.Windows.Input.Key.F1;
+             candidate <= System.Windows.Input.Key.F12;
+             candidate++)
+        {
+            if (used.Add(candidate))
+            {
+                return candidate.ToString();
+            }
+        }
+
+        return value;
     }
 
     private static bool SameKey(string left, string right) =>

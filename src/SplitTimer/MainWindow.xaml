@@ -438,7 +438,15 @@
                     <Button x:Name="BtnReveal" Style="{StaticResource GoldButton}"
                             Margin="0,0,10,0" Visibility="Collapsed"
                             AutomationProperties.Name="显示结果" Click="BtnReveal_Click">
-                        <TextBlock Text="显示结果" />
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="显示结果" VerticalAlignment="Center" />
+                            <Border CornerRadius="6" Background="#26000000" Padding="7,1"
+                                    Margin="9,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="RevealKeyText" Text="回车"
+                                           FontFamily="{StaticResource MonoFont}" FontSize="11"
+                                           Foreground="#04161E" VerticalAlignment="Center" />
+                            </Border>
+                        </StackPanel>
                     </Button>
                     <Button x:Name="BtnStart" Style="{StaticResource PrimaryButton}"
                             AutomationProperties.Name="开始" Click="BtnStart_Click">

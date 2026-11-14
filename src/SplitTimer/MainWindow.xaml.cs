@@ -34,6 +34,7 @@ public partial class MainWindow : Window
     private RoundState _state = RoundState.Idle;
     private Key _startKey = Key.Space;
     private Key _resetKey = Key.Escape;
+    private Key _revealKey = Key.Enter;
     private bool _revealed;
     private bool _committed;
     private int _finishCount;
@@ -66,7 +67,7 @@ public partial class MainWindow : Window
     }
 
     // ============================================================
-    // 快捷键（开始 / 重置）
+    // 快捷键（开始 / 重置 / 显示结果）
     // ============================================================
 
     /// <summary>把设置里的键名解析成 Key，并把当前键位写到按钮与提示上。</summary>
@@ -84,13 +85,23 @@ public partial class MainWindow : Window
             _resetKey = _startKey == Key.Escape ? Key.Space : Key.Escape;
         }
 
+        _revealKey = KeyNames.Parse(_settings.RevealKey);
+        if (_revealKey == Key.None || _revealKey == _startKey || _revealKey == _resetKey)
+        {
+            _revealKey = new[] { Key.Enter, Key.Space, Key.Escape }
+                .First(key => key != _startKey && key != _resetKey);
+        }
+
         var startLabel = KeyNames.Friendly(_startKey);
         var resetLabel = KeyNames.Friendly(_resetKey);
+        var revealLabel = KeyNames.Friendly(_revealKey);
 
         StartKeyText.Text = startLabel;
         ResetKeyText.Text = resetLabel;
+        RevealKeyText.Text = revealLabel;
         BtnStart.ToolTip = $"开始新一轮（{startLabel}）";
         BtnReset.ToolTip = $"重置整轮（{resetLabel}）";
+        BtnReveal.ToolTip = $"显示本轮成绩（{revealLabel}）";
     }
 
     // ============================================================
@@ -484,10 +495,7 @@ public partial class MainWindow : Window
         BtnReset.IsEnabled = _state != RoundState.Idle;
         BtnSettings.IsEnabled = _state is not (RoundState.Running or RoundState.Countdown);
 
-        var canReveal = _state == RoundState.Finished
-                        && _settings.AutoHideResults
-                        && !_revealed;
-        BtnReveal.Visibility = canReveal ? Visibility.Visible : Visibility.Collapsed;
+        BtnReveal.Visibility = CanReveal ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void UpdateHint()
@@ -500,6 +508,7 @@ public partial class MainWindow : Window
 
         var startLabel = KeyNames.Friendly(_startKey);
         var resetLabel = KeyNames.Friendly(_resetKey);
+        var revealLabel = KeyNames.Friendly(_revealKey);
 
         HintText.Text = _state switch
         {
@@ -508,7 +517,7 @@ public partial class MainWindow : Window
             RoundState.Running => $"计时中 —— 按下自己的按键锁定成绩 · 按 {resetLabel} 可重置本轮",
             RoundState.Finished => _revealed || !_settings.AutoHideResults
                 ? $"本轮结束 · 按 {startLabel} 开始下一轮，按 {resetLabel} 回到就绪"
-                : "全部完成 · 点「显示结果」查看成绩",
+                : $"全部完成 · 按 {revealLabel} 或点「显示结果」查看成绩",
             _ => string.Empty,
         };
     }
@@ -600,10 +609,31 @@ public partial class MainWindow : Window
             return;
         }
 
+        // 只有「全部完成但读数还藏着」的时候才能揭示，和其他状态下按这个键互不干扰。
+        if (_state == RoundState.Finished && key == _revealKey && CanReveal)
+        {
+            RevealResults();
+            return;
+        }
+
         if (key == _startKey)
         {
             StartRound();
         }
+    }
+
+    /// <summary>读数还藏着、并且这一轮确实跑完了，才允许揭示。</summary>
+    private bool CanReveal => _state == RoundState.Finished && _settings.AutoHideResults && !_revealed;
+
+    private void RevealResults()
+    {
+        if (!CanReveal)
+        {
+            return;
+        }
+
+        _revealed = true;
+        RefreshAll();
     }
 
     private void ToggleFullScreen()
@@ -679,16 +709,7 @@ public partial class MainWindow : Window
         Keyboard.Focus(this);
     }
 
-    private void BtnReveal_Click(object sender, RoutedEventArgs e)
-    {
-        if (_state != RoundState.Finished)
-        {
-            return;
-        }
-
-        _revealed = true;
-        RefreshAll();
-    }
+    private void BtnReveal_Click(object sender, RoutedEventArgs e) => RevealResults();
 
     private void BtnSettings_Click(object sender, RoutedEventArgs e)
     {

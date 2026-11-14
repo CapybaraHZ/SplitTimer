@@ -85,7 +85,7 @@ public sealed class SettingRow : CaptureTarget
     public override bool CanCapture => IsActive;
 }
 
-/// <summary>设置窗口里的一条快捷键（开始 / 重置）。</summary>
+/// <summary>设置窗口里的一条快捷键（开始 / 重置 / 显示结果）。</summary>
 public sealed class HotkeyRow : CaptureTarget
 {
     public string Title { get; init; } = string.Empty;
@@ -99,6 +99,7 @@ public partial class SettingsWindow : Window
     private readonly AppSettings _working;
     private readonly HotkeyRow _startRow;
     private readonly HotkeyRow _resetRow;
+    private readonly HotkeyRow _revealRow;
     private CaptureTarget? _captureTarget;
 
     public SettingsWindow(AppSettings settings)
@@ -112,9 +113,10 @@ public partial class SettingsWindow : Window
         RowList.ItemsSource = _rows;
         BuildRows();
 
-        _startRow = BuildHotkeyRow("开始", _working.StartKey);
-        _resetRow = BuildHotkeyRow("重置", _working.ResetKey);
-        HotkeyList.ItemsSource = new[] { _startRow, _resetRow };
+        _startRow = BuildHotkeyRow("开始", _working.StartKey, AppSettings.DefaultStartKey);
+        _resetRow = BuildHotkeyRow("重置", _working.ResetKey, AppSettings.DefaultResetKey);
+        _revealRow = BuildHotkeyRow("显示结果", _working.RevealKey, AppSettings.DefaultRevealKey);
+        HotkeyList.ItemsSource = new[] { _startRow, _resetRow, _revealRow };
 
         ChkAutoHide.IsChecked = _working.AutoHideResults;
         ChkCountdown.IsChecked = _working.CountdownEnabled;
@@ -146,12 +148,12 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private static HotkeyRow BuildHotkeyRow(string title, string keyName)
+    private static HotkeyRow BuildHotkeyRow(string title, string keyName, string fallback)
     {
         var key = KeyNames.Parse(keyName);
         if (key == Key.None)
         {
-            key = title == "开始" ? Key.Space : Key.Escape;
+            key = KeyNames.Parse(fallback);
         }
 
         return new HotkeyRow
@@ -284,6 +286,8 @@ public partial class SettingsWindow : Window
         _startRow.KeyText = KeyNames.Friendly(_startRow.Key);
         _resetRow.Key = KeyNames.Parse(AppSettings.DefaultResetKey);
         _resetRow.KeyText = KeyNames.Friendly(_resetRow.Key);
+        _revealRow.Key = KeyNames.Parse(AppSettings.DefaultRevealKey);
+        _revealRow.KeyText = KeyNames.Friendly(_revealRow.Key);
 
         _working.PlayerCount = 4;
         ChkAutoHide.IsChecked = true;
@@ -350,34 +354,37 @@ public partial class SettingsWindow : Window
             return;
         }
 
-        if (_startRow.Key == Key.None || _resetRow.Key == Key.None)
+        var hotkeys = new[] { _startRow, _resetRow, _revealRow };
+
+        if (hotkeys.FirstOrDefault(r => r.Key == Key.None) is { } emptyHotkey)
         {
-            Warn("「开始」和「重置」都需要绑定一个按键。");
+            Warn($"「{emptyHotkey.Title}」还没有绑定按键，请点一下它的按键框再按一个键。");
             return;
         }
 
-        if (_startRow.Key == _resetRow.Key)
+        var hotkeyClash = hotkeys
+            .GroupBy(r => r.Key)
+            .FirstOrDefault(g => g.Count() > 1);
+        if (hotkeyClash is not null)
         {
-            Warn($"「开始」和「重置」不能都用「{KeyNames.Friendly(_startRow.Key)}」，请改成不同的按键。");
+            var titles = string.Join("」「", hotkeyClash.Select(r => r.Title));
+            Warn($"「{titles}」不能都用「{KeyNames.Friendly(hotkeyClash.Key)}」，请改成不同的按键。");
             return;
         }
 
-        var startClash = active.FirstOrDefault(p => KeyNames.Parse(p.Key) == _startRow.Key);
-        if (startClash is not null)
+        foreach (var hotkey in hotkeys)
         {
-            Warn($"按键「{KeyNames.Friendly(_startRow.Key)}」已经是「{startClash.Name}」的停表键，请给「开始」换一个键。");
-            return;
-        }
-
-        var resetClash = active.FirstOrDefault(p => KeyNames.Parse(p.Key) == _resetRow.Key);
-        if (resetClash is not null)
-        {
-            Warn($"按键「{KeyNames.Friendly(_resetRow.Key)}」已经是「{resetClash.Name}」的停表键，请给「重置」换一个键。");
-            return;
+            var playerClash = active.FirstOrDefault(p => KeyNames.Parse(p.Key) == hotkey.Key);
+            if (playerClash is not null)
+            {
+                Warn($"按键「{KeyNames.Friendly(hotkey.Key)}」已经是「{playerClash.Name}」的停表键，请给「{hotkey.Title}」换一个键。");
+                return;
+            }
         }
 
         _working.StartKey = _startRow.Key.ToString();
         _working.ResetKey = _resetRow.Key.ToString();
+        _working.RevealKey = _revealRow.Key.ToString();
 
         Result = _working;
         DialogResult = true;

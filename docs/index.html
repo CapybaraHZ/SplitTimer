@@ -298,7 +298,7 @@
       <h1>多人同场<br /><span>毫秒级读秒计时</span></h1>
       <p class="lede">
         每位玩家一个按键、一份自己的读秒成绩。按停即刻锁定，读数自动隐藏；
-        全部完成后再由「显示结果」统一揭示。支持按自定义时间周期自动排名，开始与重置的快捷键也能自己定，适合课堂抢答、反应力比赛和现场投影。
+        全部完成后再由「显示结果」统一揭示。支持按自定义时间周期自动排名，开始、重置、显示结果三个动作的快捷键都能自己绑，适合课堂抢答、反应力比赛和现场投影。
       </p>
       <div class="cta">
         <a class="btn btn-primary" id="btn-download"
@@ -367,7 +367,7 @@
       <div class="feature">
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6.5" width="18" height="11" rx="2.4"></rect><path d="M7 10h.01M11 10h.01M15 10h.01M7.5 14h9"></path></svg></div>
         <h3>键位全部自定义</h3>
-        <p>每位玩家的停表键、以及「开始 / 重置」都能绑成任意键，按钮上实时显示当前键位；保存时自动拦截重复键。</p>
+        <p>每位玩家的停表键，以及「开始 / 重置 / 显示结果」都能绑成任意键，按钮上实时显示当前键位；保存时自动拦截重复键。</p>
       </div>
 
       <div class="feature">
@@ -435,7 +435,7 @@
       </figure>
       <figure>
         <img src="screenshots/03-pending.png" alt="全部完成等待揭示" />
-        <figcaption>全部完成：待揭示，底部亮起「显示结果」</figcaption>
+        <figcaption>全部完成：待揭示，按回车或点「显示结果」一键揭晓</figcaption>
       </figure>
       <figure class="wide">
         <img src="screenshots/06-fullscreen.png" alt="全屏模式" />
@@ -449,7 +449,7 @@
     <div class="sec-head">
       <div class="kicker">Shortcuts</div>
       <h2>键位与操作</h2>
-      <p>默认四位玩家的按键是 A / L / 1 / 0，开始用空格、重置用 Esc——这些都能在设置里改成任意键，按钮上会同步显示。</p>
+      <p>默认四位玩家的按键是 A / L / 1 / 0，开始用空格、重置用 Esc、揭示成绩用回车——这些都能在设置里改成任意键，按钮上会同步显示。</p>
     </div>
 
     <div class="panel">
@@ -460,9 +460,10 @@
         <tbody>
           <tr><td>空格</td><td><b>开始键</b>（默认）：就绪或已结束状态下发令开始新一轮，可在设置里改</td></tr>
           <tr><td>Esc</td><td><b>重置键</b>（默认）：倒计时、计时中、已结束都能按，一键回到就绪；全屏时先退出全屏</td></tr>
+          <tr><td>回车</td><td><b>揭示键</b>（默认）：全部完成但读数还藏着时按一下，等于点「显示结果」，同样可在设置里改</td></tr>
           <tr><td>A / L / 1 / 0</td><td>玩家 1–4 的停表键（可在设置中改为任意键）</td></tr>
           <tr><td>F11</td><td>进入 / 退出全屏</td></tr>
-          <tr><td>设置 → 开始 / 重置 快捷键</td><td>改成任意键，按钮上的键位徽标会同步更新</td></tr>
+          <tr><td>设置 → 快捷键</td><td>开始 / 重置 / 显示结果三个键都能改成任意键，按钮上的键位徽标同步更新</td></tr>
           <tr><td>设置 → 自动排名统计周期</td><td>填写分钟数开启排名，填 0 关闭</td></tr>
         </tbody>
       </table>
@@ -485,10 +486,10 @@
           <span class="date">2026-11-14</span>
         </div>
         <ul>
-          <li>新增<b>「开始 / 重置」快捷键</b>：设置里可绑成任意键，默认空格与 Esc</li>
-          <li>开始与重置按钮内嵌<b>键位徽标</b>，底部提示与按钮同步显示当前按键</li>
-          <li>重置键在<b>计时中也可用</b>（此前只有倒计时能按 Esc 取消本轮）</li>
-          <li>保存时校验快捷键：与玩家停表键撞车会直接拦下并提示换键</li>
+          <li>新增<b>「开始 / 重置 / 显示结果」快捷键</b>：设置里都能绑成任意键，默认空格、Esc、回车</li>
+          <li>三个按钮全内嵌<b>键位徽标</b>，底部提示与按钮 ToolTip 同步显示当前按键</li>
+          <li>重置键在<b>计时中也可用</b>；揭示键只在「全部完成但读数还藏着」时才生效</li>
+          <li>保存时校验：三个快捷键互不相同，也不能与在场玩家的停表键撞车</li>
         </ul>
       </div>
       <div class="dl">
@@ -525,12 +526,12 @@
       <div class="steps">
         <div class="step"><p><b>下载</b> <code style="font-family:var(--mono)">SplitTimer.exe</code>，放到任意目录（单文件、自带运行时，不需要装 .NET）。</p></div>
         <div class="step"><p><b>运行</b>。首次启动如果弹出 SmartScreen 提示，点「更多信息 → 仍要运行」即可，程序未做代码签名。</p></div>
-        <div class="step"><p><b>设置</b>：确认人数、为每位玩家绑定按键、按需要改开始 / 重置快捷键与排名周期（0 表示关闭），然后保存。</p></div>
+        <div class="step"><p><b>设置</b>：确认人数、为每位玩家绑定按键、按需要改开始 / 重置 / 显示结果快捷键与排名周期（0 表示关闭），然后保存。</p></div>
       </div>
 
       <figure class="settings-shot">
-        <img src="screenshots/settings.png" alt="设置窗口：隐藏规则、准备倒计时、自动排名统计周期、开始与重置快捷键、玩家按键" />
-        <figcaption>设置窗口：开关 + 排名周期 + 开始 / 重置快捷键 + 每位玩家的按键</figcaption>
+        <img src="screenshots/settings.png" alt="设置窗口：隐藏规则、准备倒计时、自动排名统计周期、开始重置与显示结果快捷键、玩家按键" />
+        <figcaption>设置窗口：开关 + 排名周期 + 三个快捷键 + 每位玩家的按键</figcaption>
       </figure>
     </div>
   </section>

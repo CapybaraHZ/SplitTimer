@@ -81,6 +81,54 @@
                                    Foreground="{StaticResource TextSecondaryBrush}" />
                     </StackPanel>
                 </Grid>
+
+                <!-- 开始 / 重置 快捷键 -->
+                <Grid Margin="0,16,0,0">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="开始 / 重置 快捷键" FontSize="13.5"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="用键盘发令与重置，按钮上会同步显示键位"
+                                   FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap" MaxWidth="300"
+                                   HorizontalAlignment="Left"
+                                   Foreground="{StaticResource TextMutedBrush}" />
+                    </StackPanel>
+
+                    <ItemsControl x:Name="HotkeyList" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="8,0,0,0" MinWidth="72">
+                                    <TextBlock Text="{Binding Title}" FontSize="11"
+                                               HorizontalAlignment="Center" Margin="0,0,0,4"
+                                               Foreground="{StaticResource TextMutedBrush}" />
+                                    <Button Click="CaptureButton_Click" Tag="{Binding}"
+                                            HorizontalContentAlignment="Center"
+                                            AutomationProperties.Name="{Binding Title, StringFormat={}{0}快捷键}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource SmallGhostButton}">
+                                                <Setter Property="Padding" Value="12,5" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCapturing}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                                        <Setter Property="Background" Value="#10202A" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <TextBlock Text="{Binding KeyText}"
+                                                   FontFamily="{StaticResource MonoFont}"
+                                                   FontSize="12" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
             </StackPanel>
         </Border>
 
@@ -162,20 +210,23 @@
 
         <!-- 底部 -->
         <Grid Grid.Row="4" Margin="4,16,4,0">
-            <TextBlock x:Name="CaptureHint" Text="点击右侧按键框可重新绑定"
+            <TextBlock x:Name="CaptureHint" Text="点击按键框可重新绑定 · Esc 用于取消"
                        FontSize="11.5" VerticalAlignment="Center"
                        Foreground="{StaticResource TextMutedBrush}" />
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Style="{StaticResource GhostButton}" Padding="16,9" FontSize="12.5"
-                        Margin="0,0,10,0" Click="BtnDefault_Click">
+                        Margin="0,0,10,0" AutomationProperties.Name="恢复默认"
+                        Click="BtnDefault_Click">
                     <TextBlock Text="恢复默认" />
                 </Button>
                 <Button Style="{StaticResource GhostButton}" Padding="20,9" FontSize="12.5"
-                        Margin="0,0,10,0" Click="BtnCancel_Click">
+                        Margin="0,0,10,0" AutomationProperties.Name="取消"
+                        Click="BtnCancel_Click">
                     <TextBlock Text="取消" />
                 </Button>
                 <Button Style="{StaticResource PrimaryButton}" Padding="26,10" FontSize="13"
+                        AutomationProperties.Name="保存"
                         Click="BtnSave_Click">
                     <TextBlock Text="保存" />
                 </Button>

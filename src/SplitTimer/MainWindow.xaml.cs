@@ -32,6 +32,8 @@ public partial class MainWindow : Window
 
     private AppSettings _settings;
     private RoundState _state = RoundState.Idle;
+    private Key _startKey = Key.Space;
+    private Key _resetKey = Key.Escape;
     private bool _revealed;
     private bool _committed;
     private int _finishCount;
@@ -52,6 +54,7 @@ public partial class MainWindow : Window
         RankItems.ItemsSource = _rankEntries;
         _uiTimer.Tick += (_, _) => OnTick();
 
+        ApplyHotkeys();
         RebuildPlayers();
         RefreshAll();
     }
@@ -63,13 +66,40 @@ public partial class MainWindow : Window
     }
 
     // ============================================================
+    // 快捷键（开始 / 重置）
+    // ============================================================
+
+    /// <summary>把设置里的键名解析成 Key，并把当前键位写到按钮与提示上。</summary>
+    private void ApplyHotkeys()
+    {
+        _startKey = KeyNames.Parse(_settings.StartKey);
+        if (_startKey == Key.None)
+        {
+            _startKey = Key.Space;
+        }
+
+        _resetKey = KeyNames.Parse(_settings.ResetKey);
+        if (_resetKey == Key.None || _resetKey == _startKey)
+        {
+            _resetKey = _startKey == Key.Escape ? Key.Space : Key.Escape;
+        }
+
+        var startLabel = KeyNames.Friendly(_startKey);
+        var resetLabel = KeyNames.Friendly(_resetKey);
+
+        StartKeyText.Text = startLabel;
+        ResetKeyText.Text = resetLabel;
+        BtnStart.ToolTip = $"开始新一轮（{startLabel}）";
+        BtnReset.ToolTip = $"重置整轮（{resetLabel}）";
+    }
+
+    // ============================================================
     // 玩家重建 / 列数
     // ============================================================
 
     private void RebuildPlayers()
     {
         _players.Clear();
-
         var defaults = AppSettings.CreateDefaultPlayers();
 
         for (var i = 0; i < _settings.PlayerCount; i++)
@@ -468,13 +498,16 @@ public partial class MainWindow : Window
             return;
         }
 
+        var startLabel = KeyNames.Friendly(_startKey);
+        var resetLabel = KeyNames.Friendly(_resetKey);
+
         HintText.Text = _state switch
         {
-            RoundState.Idle => "按 空格 或点「开始」发令 · 每位玩家按下自己的按键停表",
-            RoundState.Countdown => "准备 —— 倒计时结束后自动开始读秒",
-            RoundState.Running => "计时中 —— 按下你的按键锁定成绩",
+            RoundState.Idle => $"按 {startLabel} 开始新一轮 · 每位玩家按下自己的按键停表",
+            RoundState.Countdown => $"准备 —— 倒计时结束后自动开始读秒 · 按 {resetLabel} 取消",
+            RoundState.Running => $"计时中 —— 按下自己的按键锁定成绩 · 按 {resetLabel} 可重置本轮",
             RoundState.Finished => _revealed || !_settings.AutoHideResults
-                ? "本轮结束 · 点「重置」或「开始」进入下一轮"
+                ? $"本轮结束 · 按 {startLabel} 开始下一轮，按 {resetLabel} 回到就绪"
                 : "全部完成 · 点「显示结果」查看成绩",
             _ => string.Empty,
         };
@@ -548,33 +581,28 @@ public partial class MainWindow : Window
 
     private void HandleKey(Key key)
     {
-        switch (_state)
+        // 重置键在除「就绪」以外的任何状态都生效，和底部「重置」按钮保持一致。
+        if (_state != RoundState.Idle && key == _resetKey)
         {
-            case RoundState.Idle:
-                if (key is Key.Space or Key.Enter)
-                {
-                    StartRound();
-                }
+            ResetRound();
+            return;
+        }
 
-                break;
+        if (_state == RoundState.Running)
+        {
+            var player = _players.FirstOrDefault(p =>
+                p.Status == PlayerStatus.Running && p.BindingKey == key);
+            if (player is not null)
+            {
+                StopPlayer(player);
+            }
 
-            case RoundState.Countdown:
-                if (key == Key.Escape)
-                {
-                    ResetRound();
-                }
+            return;
+        }
 
-                break;
-
-            case RoundState.Running:
-                var player = _players.FirstOrDefault(p =>
-                    p.Status == PlayerStatus.Running && p.BindingKey == key);
-                if (player is not null)
-                {
-                    StopPlayer(player);
-                }
-
-                break;
+        if (key == _startKey)
+        {
+            StartRound();
         }
     }
 
@@ -679,6 +707,7 @@ public partial class MainWindow : Window
             _settings = dialog.Result;
             SettingsStore.Save(_settings);
 
+            ApplyHotkeys();
             RebuildPlayers();
             ResetRound();
         }

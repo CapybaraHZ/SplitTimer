@@ -294,11 +294,11 @@
   <!-- Hero -->
   <div class="hero">
     <div>
-      <span class="tag">版本 <b id="ver-badge">v1.1.0</b> · Windows x64 单文件</span>
+      <span class="tag">版本 <b id="ver-badge">v1.2.0</b> · Windows x64 单文件</span>
       <h1>多人同场<br /><span>毫秒级读秒计时</span></h1>
       <p class="lede">
         每位玩家一个按键、一份自己的读秒成绩。按停即刻锁定，读数自动隐藏；
-        全部完成后再由「显示结果」统一揭示。支持按自定义时间周期自动排名，适合课堂抢答、反应力比赛和现场投影。
+        全部完成后再由「显示结果」统一揭示。支持按自定义时间周期自动排名，开始与重置的快捷键也能自己定，适合课堂抢答、反应力比赛和现场投影。
       </p>
       <div class="cta">
         <a class="btn btn-primary" id="btn-download"
@@ -366,8 +366,8 @@
 
       <div class="feature">
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6.5" width="18" height="11" rx="2.4"></rect><path d="M7 10h.01M11 10h.01M15 10h.01M7.5 14h9"></path></svg></div>
-        <h3>按键全部自定义</h3>
-        <p>每位玩家可以绑定任意键（字母、数字、小键盘都行），保存时自动拦截重复键。</p>
+        <h3>键位全部自定义</h3>
+        <p>每位玩家的停表键、以及「开始 / 重置」都能绑成任意键，按钮上实时显示当前键位；保存时自动拦截重复键。</p>
       </div>
 
       <div class="feature">
@@ -427,7 +427,7 @@
     <div class="gallery">
       <figure>
         <img src="screenshots/01-idle.png" alt="等待开始状态" />
-        <figcaption>就绪：按空格或「开始」发令</figcaption>
+        <figcaption>就绪：按空格（或自定义开始键）发令，按钮上标着当前键位</figcaption>
       </figure>
       <figure>
         <img src="screenshots/02-partial.png" alt="玩家一已隐藏，其余仍在计时" />
@@ -449,7 +449,7 @@
     <div class="sec-head">
       <div class="kicker">Shortcuts</div>
       <h2>键位与操作</h2>
-      <p>默认四位玩家的按键是 A / L / 1 / 0，均可在设置里改。</p>
+      <p>默认四位玩家的按键是 A / L / 1 / 0，开始用空格、重置用 Esc——这些都能在设置里改成任意键，按钮上会同步显示。</p>
     </div>
 
     <div class="panel">
@@ -458,10 +458,11 @@
           <tr><th style="width:26%">按键</th><th>作用</th></tr>
         </thead>
         <tbody>
-          <tr><td>空格 / Enter</td><td>就绪或已结束状态下发令开始新一轮</td></tr>
+          <tr><td>空格</td><td><b>开始键</b>（默认）：就绪或已结束状态下发令开始新一轮，可在设置里改</td></tr>
+          <tr><td>Esc</td><td><b>重置键</b>（默认）：倒计时、计时中、已结束都能按，一键回到就绪；全屏时先退出全屏</td></tr>
           <tr><td>A / L / 1 / 0</td><td>玩家 1–4 的停表键（可在设置中改为任意键）</td></tr>
           <tr><td>F11</td><td>进入 / 退出全屏</td></tr>
-          <tr><td>Esc</td><td>全屏时退出全屏；准备倒计时中取消本轮</td></tr>
+          <tr><td>设置 → 开始 / 重置 快捷键</td><td>改成任意键，按钮上的键位徽标会同步更新</td></tr>
           <tr><td>设置 → 自动排名统计周期</td><td>填写分钟数开启排名，填 0 关闭</td></tr>
         </tbody>
       </table>
@@ -479,20 +480,20 @@
     <div class="release">
       <div>
         <div class="ver">
-          <h3 id="rel-version">v1.1.0</h3>
+          <h3 id="rel-version">v1.2.0</h3>
           <span class="badge">最新</span>
-          <span class="date">2026-11-12</span>
+          <span class="date">2026-11-14</span>
         </div>
         <ul>
-          <li>排名改为按<b>自定义时间周期</b>统计：只取最近 N 分钟内的最好成绩，跨轮累计</li>
-          <li>新增<b>关闭自动排名</b>：周期填 0 即不显示名次、不写榜单</li>
-          <li>新增顶栏「全屏 / 退出全屏」按钮（保留 F11 与 Esc）</li>
-          <li>新增底部排名条与「清空」按钮，名次与成绩一屏可见</li>
+          <li>新增<b>「开始 / 重置」快捷键</b>：设置里可绑成任意键，默认空格与 Esc</li>
+          <li>开始与重置按钮内嵌<b>键位徽标</b>，底部提示与按钮同步显示当前按键</li>
+          <li>重置键在<b>计时中也可用</b>（此前只有倒计时能按 Esc 取消本轮）</li>
+          <li>保存时校验快捷键：与玩家停表键撞车会直接拦下并提示换键</li>
         </ul>
       </div>
       <div class="dl">
         <a class="btn btn-primary" id="dl-latest"
-           href="https://github.com/CapybaraHZ/SplitTimer/releases/latest/download/SplitTimer.exe">下载 v1.1.0</a>
+           href="https://github.com/CapybaraHZ/SplitTimer/releases/latest/download/SplitTimer.exe">下载 v1.2.0</a>
         <a class="btn btn-ghost" href="https://github.com/CapybaraHZ/SplitTimer/releases">全部版本</a>
       </div>
     </div>
@@ -524,12 +525,12 @@
       <div class="steps">
         <div class="step"><p><b>下载</b> <code style="font-family:var(--mono)">SplitTimer.exe</code>，放到任意目录（单文件、自带运行时，不需要装 .NET）。</p></div>
         <div class="step"><p><b>运行</b>。首次启动如果弹出 SmartScreen 提示，点「更多信息 → 仍要运行」即可，程序未做代码签名。</p></div>
-        <div class="step"><p><b>设置</b>：确认人数、为每位玩家绑定按键、按需要填写自动排名周期（0 表示关闭），然后保存。</p></div>
+        <div class="step"><p><b>设置</b>：确认人数、为每位玩家绑定按键、按需要改开始 / 重置快捷键与排名周期（0 表示关闭），然后保存。</p></div>
       </div>
 
       <figure class="settings-shot">
-        <img src="screenshots/settings.png" alt="设置窗口：隐藏规则、准备倒计时、自动排名统计周期、玩家按键" />
-        <figcaption>设置窗口：三项开关 + 人数 + 每位玩家的按键</figcaption>
+        <img src="screenshots/settings.png" alt="设置窗口：隐藏规则、准备倒计时、自动排名统计周期、开始与重置快捷键、玩家按键" />
+        <figcaption>设置窗口：开关 + 排名周期 + 开始 / 重置快捷键 + 每位玩家的按键</figcaption>
       </figure>
     </div>
   </section>

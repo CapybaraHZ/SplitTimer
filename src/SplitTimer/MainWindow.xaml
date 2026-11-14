@@ -76,6 +76,7 @@
 
                     <Button x:Name="BtnFullScreen" Style="{StaticResource GhostButton}"
                             Padding="14,7" FontSize="12.5" Margin="0,0,8,0"
+                            AutomationProperties.Name="全屏"
                             Click="BtnFullScreen_Click" ToolTip="全屏显示（F11）">
                         <TextBlock Text="全屏" />
                     </Button>
@@ -83,12 +84,15 @@
                     <Button x:Name="BtnExitFullScreen" Style="{StaticResource GhostButton}"
                             Padding="14,7" FontSize="12.5" Margin="0,0,8,0"
                             Visibility="Collapsed"
+                            AutomationProperties.Name="退出全屏"
                             Click="BtnExitFullScreen_Click" ToolTip="退出全屏（F11 或 Esc）">
                         <TextBlock Text="退出全屏" />
                     </Button>
 
                     <Button x:Name="BtnSettings" Style="{StaticResource GhostButton}"
-                            Padding="16,7" FontSize="12.5" Click="BtnSettings_Click">
+                            Padding="16,7" FontSize="12.5"
+                            AutomationProperties.Name="设置"
+                            Click="BtnSettings_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="设置" />
                         </StackPanel>
@@ -378,7 +382,8 @@
                                Foreground="{StaticResource TextMutedBrush}" />
 
                     <Button x:Name="BtnClearRank" Grid.Column="2" Style="{StaticResource SmallGhostButton}"
-                            Padding="11,4" FontSize="11.5" Click="BtnClearRank_Click"
+                            Padding="11,4" FontSize="11.5" AutomationProperties.Name="清空"
+                            Click="BtnClearRank_Click"
                             VerticalAlignment="Center" ToolTip="清空当前周期内的历史成绩">
                         <TextBlock Text="清空" />
                     </Button>
@@ -416,16 +421,36 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button x:Name="BtnReset" Style="{StaticResource GhostButton}"
-                            Padding="22,11" Margin="0,0,10,0" Click="BtnReset_Click">
-                        <TextBlock Text="重置" />
+                            Padding="20,11" Margin="0,0,10,0"
+                            AutomationProperties.Name="重置" Click="BtnReset_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="重置" VerticalAlignment="Center" />
+                            <Border CornerRadius="6" Background="#18202C" BorderBrush="#2B3648"
+                                    BorderThickness="1" Padding="7,1" Margin="9,0,0,0"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="ResetKeyText" Text="Esc"
+                                           FontFamily="{StaticResource MonoFont}" FontSize="11"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                        </StackPanel>
                     </Button>
                     <Button x:Name="BtnReveal" Style="{StaticResource GoldButton}"
-                            Margin="0,0,10,0" Visibility="Collapsed" Click="BtnReveal_Click">
+                            Margin="0,0,10,0" Visibility="Collapsed"
+                            AutomationProperties.Name="显示结果" Click="BtnReveal_Click">
                         <TextBlock Text="显示结果" />
                     </Button>
                     <Button x:Name="BtnStart" Style="{StaticResource PrimaryButton}"
-                            Click="BtnStart_Click">
-                        <TextBlock Text="开始" />
+                            AutomationProperties.Name="开始" Click="BtnStart_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="开始" VerticalAlignment="Center" />
+                            <Border CornerRadius="6" Background="#26000000" Padding="7,1"
+                                    Margin="9,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="StartKeyText" Text="空格"
+                                           FontFamily="{StaticResource MonoFont}" FontSize="11"
+                                           Foreground="#04161E" VerticalAlignment="Center" />
+                            </Border>
+                        </StackPanel>
                     </Button>
                 </StackPanel>
             </Grid>
